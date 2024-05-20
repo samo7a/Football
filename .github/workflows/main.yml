@@ -2,6 +2,10 @@ name: Deploy
 
 on:
   push:
+    paths-ignore:
+      - 'README.md'
+      - 'FootballSimulator.drawio.png'
+      - '.gitignore'
     branches:
       - origin
 jobs:
