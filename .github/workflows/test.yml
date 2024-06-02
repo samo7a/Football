@@ -1,9 +1,6 @@
-name: Football Simulator Pipeline.
+name: Code Review Verification.
 
 on:
-  push:
-    branches:
-      - mainline
   pull_request:
     branches:
       - mainline
@@ -12,9 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'adopt'
@@ -25,9 +22,9 @@ jobs:
     if: success()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'adopt'
@@ -37,28 +34,14 @@ jobs:
         run: |
           MINIMUM_COVERAGE=95
           ACTUAL_COVERAGE=$(mvn jacoco:report-aggregate -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml -q -Dexec.executable="echo" -Dexec.args='${jacoco.reportPath}' | tr -d '\n')
+          echo "Actual coverage: $ACTUAL_COVERAGE%"
+          if [ -z "$ACTUAL_COVERAGE" ]; then
+            echo "Failed to extract coverage percentage from Maven output."
+            exit 1
+          fi
           if (( $(echo "$ACTUAL_COVERAGE < $MINIMUM_COVERAGE" | bc -l) )); then
             echo "Code coverage is below the required $MINIMUM_COVERAGE% threshold. Current coverage is $ACTUAL_COVERAGE%."
             exit 1
           else
             echo "Code coverage is $ACTUAL_COVERAGE%, which meets the required $MINIMUM_COVERAGE% threshold."
           fi
-  deploy:
-    needs: [ build, test ]
-    if: success()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: aws-actions/setup-sam@v2
-        with:
-          use-installer: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      # Build inside Docker containers
-      - run: sam build --use-container
-      # Prevent prompts and failure when the stack is unchanged
-      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
