@@ -3,13 +3,11 @@ package com.simulators.football;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 @SpringBootTest(classes = FootballApplication.class)
-class FootballApplicationTests {
+class FootballApplicationTest {
 
 	@Test
-	void contextLoads() {
-		assertNotNull(new FootballApplication());
+	public void contextLoads() {
+		FootballApplication.main(new String[] {});
 	}
 }

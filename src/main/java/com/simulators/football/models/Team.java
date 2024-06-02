@@ -1,11 +1,11 @@
 package com.simulators.football.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@Data
+@Getter
 @AllArgsConstructor
 public class Team {
     List<Player> players;
