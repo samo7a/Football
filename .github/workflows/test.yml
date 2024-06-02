@@ -2,6 +2,11 @@ name: Code Review Verification.
 
 on:
   pull_request:
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+      - 'LICENSE.md'
+      - 'FootballSimulator.drawio.png'
     branches:
       - mainline
 
