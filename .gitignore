@@ -19,7 +19,7 @@ build/
 
 ### VS Code and IntelliJ ###
 .vscode/
-.mvn
+.mvn/wrapper/maven-wrapper.jar
 .idea
 *.iws
 *.iml
