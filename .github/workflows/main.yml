@@ -1,15 +1,51 @@
-name: Deploy
+name: Football Simulator Pipeline.
 
 on:
   push:
-    paths-ignore:
-      - 'README.md'
-      - 'FootballSimulator.drawio.png'
-      - '.gitignore'
     branches:
-      - origin
+      - mainline
+  pull_request:
+    branches:
+      - mainline
+
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Build with Maven
+        run: ./mvnw clean package
+  test:
+    needs: build
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Run tests and collect coverage
+        run: ./mvnw test jacoco:report
+      - name: Check code coverage
+        run: |
+          MINIMUM_COVERAGE=95
+          ACTUAL_COVERAGE=$(mvn jacoco:report-aggregate -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml -q -Dexec.executable="echo" -Dexec.args='${jacoco.reportPath}' | tr -d '\n')
+          if (( $(echo "$ACTUAL_COVERAGE < $MINIMUM_COVERAGE" | bc -l) )); then
+            echo "Code coverage is below the required $MINIMUM_COVERAGE% threshold. Current coverage is $ACTUAL_COVERAGE%."
+            exit 1
+          else
+            echo "Code coverage is $ACTUAL_COVERAGE%, which meets the required $MINIMUM_COVERAGE% threshold."
+          fi
   deploy:
+    needs: [ build, test ]
+    if: success()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
