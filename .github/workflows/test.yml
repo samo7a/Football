@@ -33,20 +33,37 @@ jobs:
         with:
           java-version: '21'
           distribution: 'adopt'
-      - name: Run tests and collect coverage
+      - name: Coverage
         run: ./mvnw test jacoco:report
-      - name: Check code coverage
+      - name: Publish test coverage results
+        uses: PavanMudigonda/jacoco-reporter@v5
+        with:
+          coverage_results_path: 'target/site/jacoco/jacoco.xml'
+          coverage_report_title: 'Test coverage results'
+          coverage_report_name: 'Test coverage results'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_check_run: false
+          minimum_coverage: 80
+          fail_below_threshold: true
+          publish_only_summary: false
+
+            # Publish Coverage Job Summary  # Optional
+      - name: Add Jacocoo report to workflow run summary
         run: |
-          MINIMUM_COVERAGE=95
-          ACTUAL_COVERAGE=$(mvn jacoco:report-aggregate -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml -q -Dexec.executable="echo" -Dexec.args='${jacoco.reportPath}' | tr -d '\n')
-          echo "Actual coverage: $ACTUAL_COVERAGE%"
-          if [ -z "$ACTUAL_COVERAGE" ]; then
-            echo "Failed to extract coverage percentage from Maven output."
-            exit 1
-          fi
-          if (( $(echo "$ACTUAL_COVERAGE < $MINIMUM_COVERAGE" | bc -l) )); then
-            echo "Code coverage is below the required $MINIMUM_COVERAGE% threshold. Current coverage is $ACTUAL_COVERAGE%."
-            exit 1
-          else
-            echo "Code coverage is $ACTUAL_COVERAGE%, which meets the required $MINIMUM_COVERAGE% threshold."
-          fi
+          echo "| Outcome | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Code Coverage % | ${{ steps.Coverage.outputs.coverage_percentage }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| :heavy_check_mark: Number of Lines Covered | ${{ steps.Coverage.outputs.covered_lines }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| :x: Number of Lines Missed | ${{ steps.Coverage.outputs.missed_lines }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Number of Lines | ${{ steps.Coverage.outputs.total_lines }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Add coverage to PR
+        id: jacoco
+        uses: juliusiglesia/jacoco-report-publisher@0.0.2
+        with:
+          report-paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          min-overall-instructions-coverage: 50
+          min-overall-branch-coverage: 50
+          min-modified-files-instructions-coverage: 70
+          min-modified-files-branch-coverage: 70
