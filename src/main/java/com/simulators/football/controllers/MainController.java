@@ -19,7 +19,8 @@ public class MainController {
         Player p3 = new Player("Ahmed", 98);
         Player p4 = new Player("Ahmed", 98);
         Player p5 = new Player("Ahmed", 98);
-        List<Player> players = List.of(p1, p2, p3, p4, p5);
+        Player p6 = new Player("Ahmed", 98);
+        List<Player> players = List.of(p1, p2, p3, p4, p5, p6);
         return new Team(players);
     }
 }

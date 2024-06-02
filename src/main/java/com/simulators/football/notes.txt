@@ -1,0 +1,24 @@
+4 phases of play
+In possession = build up, progression, creation/finishing
+Out of possession
+Transitions
+set pieces
+
+
+events:
+start of the game
+start of the first half
+end of the first half
+start of the second half
+end of the second half
+end of the game
+kick-off
+pass the ball
+intercept the pass
+lob pass the ball
+intercept the lob pass
+Fight over a lob pass
+throw pass the ball
+intercept the throw pass
+receive the ball
+
